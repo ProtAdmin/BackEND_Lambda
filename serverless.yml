@@ -14,6 +14,14 @@ functions:
       - http:
           path: employees
           method: get
+      - http:
+          path: employees
+          method: post
 
 plugins:
   - serverless-offline
+
+custom:
+  serverless-offline:
+    basePath: ""
+

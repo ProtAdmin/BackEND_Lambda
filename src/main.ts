@@ -1,23 +1,28 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Context, Handler } from 'aws-lambda';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import express from 'express';
 import serverless from 'serverless-http';
 
-let cachedServer: any; // キャッシュ
+let cachedServer: any;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableCors(); // CORS 設定が必要なら追加
-  await app.init(); // `app.listen(3000)` は削除
+  const expressApp = express();
 
-  const expressApp = app.getHttpAdapter().getInstance(); // `express` インスタンスを取得
-  return serverless(expressApp); // `serverless-http` に渡す
+  expressApp.use(express.json()); // JSONリクエストのパースを適用
+  expressApp.use(express.urlencoded({ extended: true })); // URLエンコードされたデータの処理
+
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
+  app.enableCors();
+  await app.init();
+
+  cachedServer = serverless(expressApp);
 }
 
-// Lambda の `handler` をエクスポート
-export const handler: Handler = async (event: any, context: Context) => {
+// Lambda ハンドラー
+export async function handler(event: any, context: any) {
   if (!cachedServer) {
-    cachedServer = await bootstrap(); // 初回のみ初期化
+    await bootstrap();
   }
-  return cachedServer(event, context); // `callback` は不要
-};
+  return cachedServer(event, context);
+}

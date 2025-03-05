@@ -1,2 +1,1 @@
-import { Handler } from 'aws-lambda';
-export declare const handler: Handler;
+export declare function handler(event: any, context: any): Promise<any>;

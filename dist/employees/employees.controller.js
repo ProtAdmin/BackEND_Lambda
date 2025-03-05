@@ -8,15 +8,39 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmployeesController = void 0;
 const common_1 = require("@nestjs/common");
 let EmployeesController = class EmployeesController {
-    getAllEmployees() {
-        return [
-            { id: 1, name: '山田 太郎', position: 'エンジニア' },
-            { id: 2, name: '佐藤 花子', position: 'デザイナー' },
+    constructor() {
+        this.employees = [
+            { name: '山田 太郎', position: 'エンジニア' },
+            { name: '佐藤 花子', position: 'デザイナー' },
         ];
+    }
+    getAllEmployees() {
+        return this.employees;
+    }
+    createEmployee(req, body) {
+        console.log('Received Body:', body);
+        if (Buffer.isBuffer(body)) {
+            try {
+                body = JSON.parse(body.toString('utf8'));
+            }
+            catch (error) {
+                console.error('JSON parse error:', error);
+                return { message: 'Invalid JSON format' };
+            }
+        }
+        const newEmployee = { ...body };
+        this.employees.push(newEmployee);
+        return {
+            message: 'Employee created',
+            employee: newEmployee,
+        };
     }
 };
 exports.EmployeesController = EmployeesController;
@@ -26,6 +50,14 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], EmployeesController.prototype, "getAllEmployees", null);
+__decorate([
+    (0, common_1.Post)(),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], EmployeesController.prototype, "createEmployee", null);
 exports.EmployeesController = EmployeesController = __decorate([
     (0, common_1.Controller)('employees')
 ], EmployeesController);
